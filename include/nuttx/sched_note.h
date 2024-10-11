@@ -281,15 +281,25 @@ enum note_type_e
 enum note_tag_e
 {
   NOTE_TAG_ALWAYS = 0,
+  NOTE_TAG_LOG,
+  NOTE_TAG_LOG_EMERG = NOTE_TAG_LOG,
+  NOTE_TAG_LOG_ALERT,
+  NOTE_TAG_LOG_CRIT,
+  NOTE_TAG_LOG_ERR,
+  NOTE_TAG_LOG_WARNING,
+  NOTE_TAG_LOG_NOTICE,
+  NOTE_TAG_LOG_INFO,
+  NOTE_TAG_LOG_DEBUG,
   NOTE_TAG_APP,
   NOTE_TAG_ARCH,
   NOTE_TAG_AUDIO,
-  NOTE_TAG_BOARD,
+  NOTE_TAG_BOARDS,
   NOTE_TAG_CRYPTO,
   NOTE_TAG_DRIVERS,
   NOTE_TAG_FS,
   NOTE_TAG_GRAPHICS,
   NOTE_TAG_INPUT,
+  NOTE_TAG_LIBS,
   NOTE_TAG_MM,
   NOTE_TAG_NET,
   NOTE_TAG_SCHED,
@@ -309,9 +319,7 @@ struct note_common_s
   uint8_t nc_length;           /* Length of the note */
   uint8_t nc_type;             /* See enum note_type_e */
   uint8_t nc_priority;         /* Thread/task priority */
-#ifdef CONFIG_SMP
   uint8_t nc_cpu;              /* CPU thread/task running on */
-#endif
   pid_t nc_pid;                /* ID of the thread/task */
 
   /* Time when note was buffered (sec) */
@@ -570,36 +578,28 @@ extern "C"
  *
  ****************************************************************************/
 
-#ifdef CONFIG_SCHED_INSTRUMENTATION
+#ifdef CONFIG_SCHED_INSTRUMENTATION_SWITCH
 void sched_note_start(FAR struct tcb_s *tcb);
 void sched_note_stop(FAR struct tcb_s *tcb);
-#else
-#  define sched_note_start(t)
-#  define sched_note_stop(t)
-#endif
-
-#ifdef CONFIG_SCHED_INSTRUMENTATION_SWITCH
 void sched_note_suspend(FAR struct tcb_s *tcb);
 void sched_note_resume(FAR struct tcb_s *tcb);
 #else
+#  define sched_note_stop(t)
+#  define sched_note_start(t)
 #  define sched_note_suspend(t)
 #  define sched_note_resume(t)
 #endif
 
-#if defined(CONFIG_SMP) && defined(CONFIG_SCHED_INSTRUMENTATION)
+#if defined(CONFIG_SMP) && defined(CONFIG_SCHED_INSTRUMENTATION_SWITCH)
 void sched_note_cpu_start(FAR struct tcb_s *tcb, int cpu);
 void sched_note_cpu_started(FAR struct tcb_s *tcb);
-#else
-#  define sched_note_cpu_start(t,c)
-#  define sched_note_cpu_started(t)
-#endif
-
-#if defined(CONFIG_SMP) && defined(CONFIG_SCHED_INSTRUMENTATION_SWITCH)
 void sched_note_cpu_pause(FAR struct tcb_s *tcb, int cpu);
 void sched_note_cpu_paused(FAR struct tcb_s *tcb);
 void sched_note_cpu_resume(FAR struct tcb_s *tcb, int cpu);
 void sched_note_cpu_resumed(FAR struct tcb_s *tcb);
 #else
+#  define sched_note_cpu_start(t,c)
+#  define sched_note_cpu_started(t)
 #  define sched_note_cpu_pause(t,c)
 #  define sched_note_cpu_paused(t)
 #  define sched_note_cpu_resume(t,c)
